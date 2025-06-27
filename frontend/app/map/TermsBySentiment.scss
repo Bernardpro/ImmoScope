@@ -1,0 +1,62 @@
+// Simple SCSS for the "mots-clés par sentiment" card
+// ————————————————————————————————————————————
+// Palette (peut être extraite en variables globales)
+$positive-color: #16a34a; // équivalent Tailwind green-600
+$negative-color: #dc2626; // équivalent Tailwind red-600
+$neutral-bg: #fafafa;     // blanc cassé
+$text-color:  #111;       // texte quasi‑noir
+$muted-color: #9ca3af;    // gris clair pour "aucun mot"
+
+.terms-card {
+  background: $neutral-bg;
+  color: $text-color;
+  border-radius: 0.75rem;          // ≈ 12px
+  padding: 1.25rem;                // ≈ 20px
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  // grille 2 colonnes pour positif / négatif
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+// Section (colonne) — facultatif si besoin d'overrides
+.terms-card__section {
+  // rien pour l'instant
+}
+
+// Titres
+.terms-card__title {
+  font-weight: 600;
+  font-size: 1rem;      // 16px
+  margin-bottom: 0.5rem;
+
+  &--positive {
+    color: $positive-color;
+  }
+
+  &--negative {
+    color: $negative-color;
+  }
+}
+
+// Liste de mots
+.terms-card__list {
+  list-style: disc inside;
+  font-size: 0.875rem;  // 14px
+  margin: 0;
+  padding: 0;
+}
+
+.terms-card__list-item {
+  margin-bottom: 0.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &--empty {
+    font-style: italic;
+    color: $muted-color;
+  }
+}

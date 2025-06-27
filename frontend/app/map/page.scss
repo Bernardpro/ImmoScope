@@ -1,0 +1,606 @@
+// Variables spécifiques à la page carte
+$sidebar-width: 350px;
+$sidebar-width-mobile: 300px;
+$sidebar-closed-width: 60px;
+$map-controls-size: 45px;
+
+.map_page {
+	height: 100%;
+	overflow: hidden;
+	position: relative; // Ajouté pour le positionnement de l'overlay
+
+	// Overlay pour mobile quand sidebar ouverte
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		z-index: 999;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.3s ease;
+		pointer-events: none;
+
+		@media (min-width: 769px) {
+			display: none; // Masquer sur desktop
+		}
+	}
+
+	&.sidebar_open::after {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+
+		@media (max-width: 768px) {
+			display: block;
+		}
+	}
+}
+
+.map_main {
+	display: flex;
+	height: 100%;
+	position: relative;
+}
+
+// Sidebar gauche
+.sidebar_left {
+	width: 20%;
+	height: 100%;
+	background-color: white;
+	box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+	z-index: 10;
+	transition: all 0.3s ease;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+
+	&.sidebar_closed {
+		width: $sidebar-closed-width;
+		z-index: 9000; // Assure que la sidebar fermée est au-dessus de la carte
+
+		.sidebar_content {
+			opacity: 0;
+			visibility: hidden;
+		}
+
+		.sidebar_header h2 {
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	@media (max-width: 1200px) {
+		width: 320px;
+	}
+
+	@media (max-width: 1024px) {
+		width: $sidebar-width-mobile;
+	}
+
+	@media (max-width: 768px) {
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		width: $sidebar-width-mobile;
+		transform: translateX(-100%);
+		z-index: 1000;
+
+		&.sidebar_open {
+			transform: translateX(0);
+			animation: slideInFromLeft 0.3s ease-out;
+		}
+
+		&.sidebar_closed {
+			transform: translateX(-100%);
+			width: $sidebar-width-mobile;
+		}
+	}
+
+	@media (max-width: 480px) {
+		width: calc(100vw - 20px);
+	}
+}
+
+.sidebar_header {
+	padding: 20px;
+	border-bottom: 1px solid #e1e5e9;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #f8f9fa;
+	flex-shrink: 0; // Empêche la compression
+
+	h2 {
+		margin: 0;
+		font-size: 1.3rem;
+		color: #343a40;
+		transition: all 0.3s ease;
+	}
+}
+
+.sidebar_toggle {
+	background: none;
+	border: none;
+	font-size: 18px;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 4px;
+	transition: all 0.3s ease;
+	color: #6c757d;
+	flex-shrink: 0; // Empêche la compression
+	z-index: 9000;
+
+	&:hover {
+		background-color: #e9ecef;
+		color: #495057;
+	}
+
+	&:focus-visible {
+		outline: 2px solid #007bff;
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 768px) {
+		position: fixed;
+		top: 80px; // Sous le header
+		left: 10px;
+		z-index: 1001;
+		background-color: white;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		border-radius: 50%;
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+}
+
+.sidebar_content {
+	flex: 1;
+	padding: 20px;
+	overflow-y: auto;
+	transition: all 0.3s ease;
+
+	@media (max-width: 480px) {
+		padding: 15px;
+	}
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #f1f1f1;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: #c1c1c1;
+		border-radius: 3px;
+
+		&:hover {
+			background: #a8a8a8;
+		}
+	}
+}
+
+// Sections de filtres
+.filter_section {
+	margin-bottom: 30px;
+
+	h3 {
+		margin-bottom: 20px;
+		font-size: 1.1rem;
+		color: #495057;
+		border-bottom: 1px solid #e9ecef;
+		padding-bottom: 10px;
+	}
+}
+
+.filter_group {
+	margin-bottom: 20px;
+	position: relative; // Important pour que les suggestions se positionnent correctement
+
+	@media (max-width: 480px) {
+		margin-bottom: 15px;
+	}
+
+	label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 500;
+		color: #495057;
+		font-size: 0.9rem;
+	}
+}
+
+// Container de recherche avec position relative pour les éléments absolus
+.search_container {
+	position: relative;
+	display: flex;
+	align-items: center;
+	z-index: 1;
+}
+
+.filter_input,
+.filter_select {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #ced4da;
+	border-radius: 6px;
+	font-size: 14px;
+	transition: all 0.3s ease;
+	position: relative;
+	z-index: 2;
+
+	&:focus {
+		outline: none;
+		border-color: #007bff;
+		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	}
+
+	&:hover:not(:focus) {
+		border-color: #adb5bd;
+	}
+
+	&::placeholder {
+		color: #6c757d;
+	}
+
+	// Spécifique pour les inputs dans le container de recherche
+	.search_container & {
+		padding-right: 40px; // Espace pour le bouton clear et loading
+	}
+}
+
+.filter_range {
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.range_value {
+	font-size: 0.85rem;
+	color: #6c757d;
+	font-weight: 500;
+}
+
+// Indicateur de chargement dans l'input
+.search_loading {
+	position: absolute;
+	right: 35px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+
+	.loading_spinner {
+		animation: spin 1s linear infinite;
+	}
+}
+
+// Bouton pour vider la recherche
+.clear_search {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	font-size: 18px;
+	cursor: pointer;
+	color: #6c757d;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	opacity: 0.7;
+	transition: all 0.3s ease;
+
+	&:hover {
+		background-color: #f8f9fa;
+		color: #495057;
+		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: 2px solid #007bff;
+		outline-offset: 2px;
+	}
+
+	.search_container:hover & {
+		opacity: 1;
+	}
+}
+
+// Container des suggestions - Version corrigée
+.suggestions_container {
+	position: absolute;
+	top: 100%; // Positionnement juste en dessous de l'input
+	left: 0;
+	right: 0;
+	z-index: 1000;
+	background: white;
+	border: 1px solid #ced4da;
+	border-radius: 0 0 6px 6px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	max-height: 200px;
+	overflow-y: auto;
+	animation: slideDown 0.2s ease-out;
+	margin-top: 2px; // Petit espace entre l'input et les suggestions
+
+	@media (max-width: 768px) {
+		position: fixed;
+		top: auto;
+		left: 10px;
+		right: 10px;
+		bottom: 10px;
+		border-radius: 8px;
+		border: 1px solid #ced4da;
+		max-height: 50vh;
+		margin-top: 0;
+	}
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #f1f1f1;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: #c1c1c1;
+		border-radius: 3px;
+	}
+}
+
+// Liste des suggestions
+.location_suggestions {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.suggestion_item {
+	padding: 12px 15px;
+	cursor: pointer;
+	border-bottom: 1px solid #f8f9fa;
+	transition: all 0.2s ease;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	@media (max-width: 768px) {
+		padding: 15px;
+		font-size: 16px; // Éviter le zoom sur mobile
+	}
+
+	&:hover,
+	&.selected {
+		background-color: #e3f2fd;
+		color: #1976d2;
+	}
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&:focus-visible {
+		outline: 2px solid #007bff;
+		outline-offset: 2px;
+	}
+
+	.suggestion_name {
+		font-weight: 500;
+		flex: 1;
+	}
+
+	.suggestion_code {
+		font-size: 0.85rem;
+		color: #6c757d;
+		font-weight: normal;
+	}
+
+	&.selected .suggestion_code {
+		color: #1565c0;
+	}
+}
+
+// États de chargement et d'erreur dans les suggestions
+.suggestion_loading,
+.suggestion_error,
+.no_suggestions {
+	padding: 15px;
+	text-align: center;
+	color: #6c757d;
+	font-size: 0.9rem;
+
+	p {
+		margin: 0;
+	}
+}
+
+.suggestion_error {
+	color: #dc3545;
+	background-color: #f8d7da;
+}
+
+.no_suggestions {
+	font-style: italic;
+}
+
+// Section d'actions
+.action_section {
+	margin-bottom: 30px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	.btn_primary:disabled {
+		background-color: #6c757d;
+		cursor: not-allowed;
+		opacity: 0.6;
+
+		&:hover {
+			background-color: #6c757d;
+			transform: none;
+		}
+	}
+}
+
+// Section des résultats
+.results_section {
+	h3 {
+		margin-bottom: 15px;
+		font-size: 1.1rem;
+		color: #495057;
+		border-bottom: 1px solid #e9ecef;
+		padding-bottom: 10px;
+	}
+}
+
+.current_location {
+	padding: 10px 15px;
+	background-color: #e3f2fd;
+	border-radius: 6px;
+	margin-bottom: 15px;
+	border-left: 3px solid #2196f3;
+
+	strong {
+		color: #1565c0;
+		font-size: 0.9rem;
+	}
+}
+
+.results_list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.result_item {
+	padding: 15px;
+	background-color: #f8f9fa;
+	border-radius: 8px;
+	border-left: 3px solid #007bff;
+	cursor: pointer;
+	transition: all 0.3s ease;
+
+	&:hover {
+		background-color: #e9ecef;
+		transform: translateX(3px);
+	}
+
+	h4 {
+		margin: 0 0 5px 0;
+		font-size: 1rem;
+		color: #212529;
+	}
+
+	p {
+		margin: 0 0 5px 0;
+		font-size: 0.85rem;
+		color: #6c757d;
+	}
+
+	.distance {
+		font-size: 0.8rem;
+		color: #007bff;
+		font-weight: 500;
+	}
+}
+
+// Zone de la carte
+.map_container {
+	position: relative;
+	background-color: red;
+	width: 100%;
+
+	.zoom_button {
+		position: absolute;
+		bottom: 90px;
+		right: 50%;
+		width: 250px;
+		z-index: 9000;
+		background-color: white;
+		border: none;
+		border-radius: 6px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		cursor: pointer;
+		padding: 10px;
+		font-size: 16px;
+
+		&:hover {
+			background-color: #f8f9fa;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+
+		&:focus-visible {
+			outline: 2px solid #007bff;
+			outline-offset: 2px;
+		}
+	}
+}
+
+// Animations
+@keyframes slideInFromLeft {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// Amélioration du contraste pour l'accessibilité
+@media (prefers-contrast: high) {
+	.suggestion_item.selected {
+		background-color: #000;
+		color: #fff;
+
+		.suggestion_code {
+			color: #ccc;
+		}
+	}
+
+	.suggestions_container {
+		border-color: #000;
+	}
+
+	.filter_input:focus,
+	.filter_select:focus {
+		border-color: #000;
+		box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5);
+	}
+}

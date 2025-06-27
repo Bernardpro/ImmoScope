@@ -1,0 +1,24 @@
+# .env.example
+
+# MinIO
+URL_MINIO="35.241.212.205"
+MINIO_ACCESS_KEY=changeme
+MINIO_SECRET_KEY=changeme
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=password
+
+# Spark
+AWS_ACCESS_KEY_ID=admin
+AWS_SECRET_ACCESS_KEY=password
+
+# postgresql
+PG_USER=trainuser
+PG_PASSWORD=trainpass123
+DATABASE_URL="jdbc:postgresql://postgres:5432/traindb"
+
+# ElasticSearch
+
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=changeme
+ELASTIC_OBJECT_KEY=8dd06e5b7fe779a980bad84052f8e9e2
+ELASTIC_REPORTING_KEY=961745f3b79268ced30ced4b02988cd8

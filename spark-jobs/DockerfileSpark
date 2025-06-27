@@ -1,0 +1,23 @@
+FROM bitnami/spark:3.2 
+
+USER root
+
+RUN mkdir -p /var/lib/apt/lists/partial && \
+    apt-get update && \
+    apt-get install -y curl netcat-openbsd postgresql-client rsync && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir beautifulsoup4 lxml requests python-dotenv minio stop-words spark-nlp==6.0.1 numpy==1.26.4 pandas "pyarrow>=14,<15" openai==1.91.0 backoff==2.2.1
+
+ADD https://jdbc.postgresql.org/download/postgresql-42.7.3.jar /opt/bitnami/spark/jars/
+
+COPY transform_html_data.py transform_comment.py run.py /opt/bitnami/spark/
+RUN chmod -R +x /opt/bitnami/spark/
+COPY wait-for-spark-job.sh /wait-for-spark-job.sh
+RUN chmod +x /wait-for-spark-job.sh
+
+ENTRYPOINT ["python", "/opt/bitnami/spark/run.py"]
+
+# CMD ["/opt/bitnami/spark/run.py"]
+
+# CMD ["/opt/bitnami/spark/bin/spark-submit", "/opt/bitnami/spark/transform_html_data.py"]

@@ -1,0 +1,53 @@
+.env
+
+*.sql
+backup_fonciers_20_06.csv
+backup_server_logement_20_06.sql
+*.csv
+
+node_module
+*.__pycache__/*
+__pycache__
+*.log
+*.lock
+*.wt
+*.pyc
+.idea
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+
+# mino 
+minio_data
+logicimmo

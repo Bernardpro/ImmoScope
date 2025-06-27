@@ -1,0 +1,450 @@
+// Variables
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+$light-color: #f8f9fa;
+$dark-color: #343a40;
+
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s ease;
+
+// Reset et base
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+		"Helvetica Neue", sans-serif;
+	line-height: 1.6;
+	color: $dark-color;
+	background-color: $light-color;
+}
+
+// Layout principal
+.app_layout {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.main_content {
+	background-color: red;
+	height: calc(100% - 10%); // Ajuster la hauteur pour le header
+}
+
+// Header
+.header {
+	background-color: white;
+	box-shadow: $box-shadow;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	height: 10%;
+
+	&_container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 20px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 70px;
+	}
+
+	&_logo {
+		h1 {
+			color: $primary-color;
+			font-size: 1.8rem;
+			font-weight: 700;
+		}
+	}
+
+	&_nav {
+		ul {
+			display: flex;
+			list-style: none;
+			gap: 30px;
+
+			li {
+				a {
+					text-decoration: none;
+					color: $dark-color;
+					font-weight: 500;
+					transition: $transition;
+
+					&:hover {
+						color: $primary-color;
+					}
+				}
+			}
+		}
+
+		@media (max-width: 768px) {
+			display: none;
+		}
+	}
+
+	&_actions {
+		display: flex;
+		gap: 15px;
+
+		@media (max-width: 480px) {
+			flex-direction: column;
+			gap: 10px;
+		}
+	}
+}
+
+// Boutons
+.btn_primary,
+.btn_secondary {
+	padding: 10px 20px;
+	border: none;
+	border-radius: $border-radius;
+	font-weight: 500;
+	cursor: pointer;
+	transition: $transition;
+	text-decoration: none;
+	display: inline-block;
+	text-align: center;
+
+	&:hover {
+		transform: translateY(-2px);
+	}
+
+	&:active {
+		transform: translateY(0);
+	}
+}
+
+.btn_primary {
+	background-color: $primary-color;
+	color: white;
+
+	&:hover {
+		background-color: darken($primary-color, 10%);
+	}
+}
+
+.btn_secondary {
+	background-color: transparent;
+	color: $secondary-color;
+	border: 2px solid $secondary-color;
+
+	&:hover {
+		background-color: $secondary-color;
+		color: white;
+	}
+}
+
+.btn_full {
+	width: 100%;
+}
+
+.link_button {
+	background: none;
+	border: none;
+	color: $primary-color;
+	cursor: pointer;
+	text-decoration: underline;
+	font-size: inherit;
+
+	&:hover {
+		color: darken($primary-color, 10%);
+	}
+}
+
+// Modales
+.modal_overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+.modal_content {
+	background-color: white;
+	border-radius: $border-radius;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+	position: relative;
+	width: 100%;
+	max-width: 400px;
+	max-height: 90vh;
+	overflow-y: auto;
+}
+
+.modal_close {
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: $secondary-color;
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&:hover {
+		color: $danger-color;
+	}
+}
+
+// Formulaires d'authentification
+.auth_form {
+	padding: 40px 30px;
+
+	h2 {
+		text-align: center;
+		margin-bottom: 30px;
+		color: $dark-color;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+}
+
+.form_group {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+
+	label {
+		font-weight: 500;
+		color: $dark-color;
+	}
+
+	input {
+		padding: 12px;
+		border: 2px solid #e1e5e9;
+		border-radius: $border-radius;
+		font-size: 16px;
+		transition: $transition;
+
+		&:focus {
+			outline: none;
+			border-color: $primary-color;
+		}
+
+		&:invalid {
+			border-color: $danger-color;
+		}
+	}
+}
+
+.form_row {
+	display: flex;
+	gap: 15px;
+
+	.form_group {
+		flex: 1;
+	}
+
+	@media (max-width: 480px) {
+		flex-direction: column;
+		gap: 20px;
+	}
+}
+
+.auth_switch {
+	text-align: center;
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: 1px solid #e1e5e9;
+
+	p {
+		color: $secondary-color;
+	}
+}
+
+// Responsive
+@media (max-width: 768px) {
+	.header {
+		&_container {
+			padding: 0 15px;
+		}
+
+		&_logo h1 {
+			font-size: 1.5rem;
+		}
+	}
+
+	.auth_form {
+		padding: 30px 20px;
+	}
+}
+
+@media (max-width: 480px) {
+	.modal_content {
+		margin: 0;
+		max-width: none;
+		border-radius: 0;
+		height: 100vh;
+		max-height: none;
+	}
+
+	.auth_form {
+		padding: 20px 15px;
+	}
+}
+
+.line_bar_filtre {
+	background-color: rgb(242, 242, 242);
+	box-shadow: $box-shadow;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	padding: 5px 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	max-width: 100%;
+}
+
+.data_type_selector {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 0 20px;
+
+	.selector_label {
+		font-size: 14px;
+		font-weight: 500;
+		color: #374151;
+		white-space: nowrap;
+		margin: 0;
+	}
+
+	.selector_wrapper {
+		display: flex;
+		background: #f8f9fa;
+		border-radius: 8px;
+		padding: 4px;
+		gap: 2px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+
+	.selector_button {
+		padding: 8px 16px;
+		border: none;
+		background: transparent;
+		color: #6b7280;
+		font-size: 14px;
+		font-weight: 500;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+		position: relative;
+
+		&:hover {
+			color: #374151;
+			background: rgba(59, 130, 246, 0.1);
+		}
+
+		&.active {
+			background: #3b82f6;
+			color: white;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		}
+
+		&:focus {
+			outline: none;
+			box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+		}
+	}
+}
+
+// Responsive design
+@media (max-width: 768px) {
+	.data_type_selector {
+		margin: 0 10px;
+
+		.selector_label {
+			display: none; // Masquer le label sur mobile
+		}
+
+		.selector_wrapper {
+			padding: 3px;
+		}
+
+		.selector_button {
+			padding: 6px 12px;
+			font-size: 13px;
+		}
+	}
+
+	// Ajuster le header pour mobile
+	.header_container {
+		flex-wrap: wrap;
+		gap: 10px;
+
+		.data_type_selector {
+			order: 3; // Placer le sélecteur en bas sur mobile
+			width: 100%;
+			justify-content: center;
+			margin: 10px 0 0 0;
+		}
+	}
+}
+
+@media (max-width: 480px) {
+	.data_type_selector {
+		.selector_button {
+			padding: 5px 8px;
+			font-size: 12px;
+		}
+	}
+}
+
+// Alternative avec un select dropdown pour économiser l'espace
+
+.data_type_selector_dropdown {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	.selector_label {
+		font-size: 14px;
+		font-weight: 500;
+		color: #374151;
+		white-space: nowrap;
+	}
+
+	.selector_select {
+		padding: 8px 12px;
+		border: 1px solid #d1d5db;
+		border-radius: 6px;
+		background: white;
+		font-size: 14px;
+		color: #374151;
+		cursor: pointer;
+		min-width: 120px;
+
+		&:focus {
+			outline: none;
+			border-color: #3b82f6;
+			box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+		}
+	}
+}

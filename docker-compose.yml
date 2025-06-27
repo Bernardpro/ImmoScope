@@ -1,0 +1,289 @@
+services:
+  api_maillage:
+    build:
+      context: ./ 
+      dockerfile: docker/DockerfileApiMaillage
+    container_name: api_maillage_container
+    working_dir: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis123
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=trainuser
+      - PG_PASSWORD=trainpass123
+      - PG_DATABASE=maillage
+      - DATABASE_URL=postgresql://trainuser:trainpass123@postgres:5432/maillage
+    ports:
+      - "81:81"
+    networks:
+      - app-network
+    volumes:
+      - ./api_maillage:/app
+      - ./entrypointApiMaillage.sh:/app/entrypoint.sh
+
+  back:
+    build:
+      context: ./
+      dockerfile: docker/DockerfileBack
+    container_name: api
+    working_dir: /app
+    ports:
+      - "82:82"
+    volumes:
+      - ./api:/app
+      - ./entrypointBack.sh:/app/entrypoint.sh
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis123
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=traindb
+      - POSTGRES_USER=trainuser
+      - POSTGRES_PASSWORD=trainpass123
+      - API_PORT=82
+      - ACCESS_TOKEN_EXPIRE_SECONDES=3600
+      - DATABASE_URL=postgresql://trainuser:trainpass123@postgres:5432/traindb
+      - VITE_API_URL=http://back:82
+    entrypoint: ["sh", "/app/entrypoint.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass redis123 --appendonly yes
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=trainuser
+      - POSTGRES_PASSWORD=trainpass123
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb/backup_server_logement_20_06.sql:/docker-entrypoint-initdb.d/backup_server_logement_20_06.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trainuser -d traindb"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    shm_size: 256mb
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./minio_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  spark-master:
+    image: bitnami/spark:3.2
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - MINIO_URL=${URL_MINIO-:35.241.212.205}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY-:minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY-:minioadmin123}
+      - DATABASE_URL=${DATABASE_URL-:jdbc:postgresql://postgres:5432/traindb}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./spark-jobs/run.py:/opt/bitnami/spark/run.py
+      - ./spark-jobs/transform_html_data.py:/opt/bitnami/spark/transform_html_data.py
+      - ./spark-jobs/transform_comment.py:/opt/bitnami/spark/transform_comment.py
+      - ./spark-jobs/test.py:/opt/bitnami/spark/test.py
+      - ./spark-jobs/wait_for_spark.sh:/wait-for-spark-job.sh
+      - ./spark-jobs/nlp.py:/opt/bitnami/spark/nlp.py
+      - ./spark-jobs/spark_sentiment.py:/opt/bitnami/spark/spark_sentiment.py
+      
+      
+
+  spark-worker:
+    image: bitnami/spark:3.2 
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - MINIO_URL=${URL_MINIO-:35.241.212.205}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY-:minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY-:minioadmin123}
+      - DATABASE_URL=${DATABASE_URL-:jdbc:postgresql://postgres:5432/traindb}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - spark-master
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./spark-jobs/run.py:/opt/bitnami/spark/run.py
+      - ./spark-jobs/transform_html_data.py:/opt/bitnami/spark/transform_html_data.py
+      - ./spark-jobs/transform_comment.py:/opt/bitnami/spark/transform_comment.py
+      - ./spark-jobs/test.py:/opt/bitnami/spark/test.py
+      - ./spark-jobs/wait_for_spark.sh:/wait-for-spark-job.sh
+      - ./spark-jobs/nlp.py:/opt/bitnami/spark/nlp.py
+      - ./spark-jobs/spark_sentiment.py:/opt/bitnami/spark/spark_sentiment.py
+
+
+  spark-job:
+    build:
+      context: ./spark-jobs
+      dockerfile: DockerfileSpark
+    container_name: spark-job
+    depends_on:
+      - spark-master
+      - postgres
+    networks:
+      - app-network
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - MINIO_URL=${URL_MINIO-:35.241.212.205}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY-:minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY-:minioadmin123}
+      - DATABASE_URL=${DATABASE_URL-:jdbc:postgresql://postgres:5432/traindb}
+      - ES_USER=${ELASTICSEARCH_USERNAME-:kibana_system}
+      - ES_PASSWORD=${ELASTICSEARCH_PASSWORD-:password123}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: "no"
+    volumes:
+      - ./spark-jobs/run.py:/opt/bitnami/spark/run.py
+      - ./spark-jobs/transform_html_data.py:/opt/bitnami/spark/transform_html_data.py
+      - ./spark-jobs/transform_comment.py:/opt/bitnami/spark/transform_comment.py
+      - ./spark-jobs/test.py:/opt/bitnami/spark/test.py
+      - ./spark-jobs/wait-for-spark-job.sh:/wait-for-spark-job.sh
+      - ./spark-jobs/nlp.py:/opt/bitnami/spark/nlp.py
+      - ./spark-jobs/spark_sentiment.py:/opt/bitnami/spark/spark_sentiment.py
+
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    restart: unless-stopped
+    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - back
+    networks:
+      - app-network
+    volumes:
+      - ./frontend:/app
+    restart: unless-stopped
+    
+  
+  elasticsearch:
+    image: docker.io/elastic/elasticsearch:9.0.2
+    container_name: es01
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false             # no TLS, no auth
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - node.name=es01
+      - cluster.name=city-comments
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks: [app-network]
+
+  kibana:
+    image: docker.io/elastic/kibana:9.0.2
+    container_name: kb01
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es01:9200     # ← **http**, not https
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - xpack.encryptedSavedObjects.encryptionKey=8dd06e5b7fe779a980bad84052f8e9e2
+      - xpack.reporting.encryptionKey=961745f3b79268ced30ced4b02988cd8
+    depends_on: [elasticsearch]
+    ports:
+      - "5601:5601"
+    networks: [app-network]
+
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    name: train-redis
+  postgres_data:
+    name: train-postgres
+  esdata:

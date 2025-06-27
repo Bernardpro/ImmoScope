@@ -261,4 +261,11 @@ docker ps
 
 ---
 
-*🏠 Développé avec ❤️ par l'équipe ImmoScope - Projet d'analyse immobilière et de données géographiques*
+## 👥 Contributeurs
+
+- [Ibrahim Chergui](https://github.com/Ibrahimch69) – Développeur backend
+- [Antonin Criquillon](https://github.com/p1910081) – Analyste data, développeur FullStack
+- [Bilal Abderrahmane](https://github.com/bilal-abd) – Développeur backend
+- [Maxime Bernard](https://github.com/bernardpro) – Chef de projet, ingénieur data, devOps
+
+Merci à tous les contributeurs du projet **ImmoScope** !

@@ -1,4 +1,4 @@
-# 🏠 HomePedia - Plateforme Interactive d'Analyse Immobilière
+# 🏠 ImmoScope - Plateforme Interactive d'Analyse Immobilière
 
 ![Architecture](Architecture.png)
 
@@ -39,8 +39,8 @@ Une plateforme cartographique interactive pour l'analyse de données immobilièr
 
 ```bash
 # 📥 Cloner le dépôt
-git clone git@github.com:EpitechMscProPromo2025/T-DAT-902-LYO_4.git
-cd T-DAT-902-LYO_4
+git clone git@github.com:EpitechMscProPromo2025/ImmoScope.git
+cd ImmoScope
 
 # 📄 Copier le fichier d'environnement
 cp ".env copy.example" .env
@@ -60,7 +60,7 @@ make build-data
 
 ## 📁 Structure du Projet
 ```
-T-DAT-902-LYO_4/
+ImmoScope/
 ├── 🌐 api/                 # API Backend FastAPI principale
 │   ├── 🔐 auth/           # Système d'authentification JWT
 │   ├── 🛣️ routes/         # Endpoints API (data, proprietes, auth, cache)
@@ -261,4 +261,4 @@ docker ps
 
 ---
 
-*🏠 Développé avec ❤️ par l'équipe T-DAT-902-LYO_4 - Projet d'analyse immobilière et de données géographiques*
+*🏠 Développé avec ❤️ par l'équipe ImmoScope - Projet d'analyse immobilière et de données géographiques*
